@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
+import 'package:beauty_connect/views/auth/reset_password.dart';
 import 'package:flutter/material.dart';
-import 'package:beauty_connect/core/core.dart'; // for AppTheme.primaryPink, etc.
+import 'package:beauty_connect/core/core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // for AppTheme.primaryPink, etc.
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -9,9 +14,50 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final AppLinks _appLinks = AppLinks();
+  StreamSubscription? _sub;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _sending = false;
+
+  void _initDeepLinkListener() {
+    // Listen for links while the app is running
+    _sub = _appLinks.uriLinkStream.listen(
+      (Uri? uri) {
+        if (uri != null) _handleResetLink(uri);
+      },
+      onError: (err) {
+        debugPrint('Error listening to app links: $err');
+      },
+    );
+
+    // Handle initial link if app was opened via link
+    _appLinks
+        .getInitialLink()
+        .then((uri) {
+          if (uri != null) _handleResetLink(uri);
+        })
+        .catchError((err) => debugPrint('Error getting initial link: $err'));
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  void _handleResetLink(Uri uri) {
+    // Example link: beautyconnect://reset-password?access_token=xxx
+    if (uri.pathSegments.contains('reset-password')) {
+      final token = uri.queryParameters['access_token'];
+      if (token != null) {
+        final route = MaterialPageRoute(
+          builder: (context) => ResetPasswordScreen(),
+        );
+        Navigator.push(context, route);
+      }
+    }
+  }
 
   Future<void> _sendResetEmail() async {
     if (!_formKey.currentState!.validate()) return;
@@ -19,18 +65,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _sending = true);
 
     try {
-      // TODO: integrate with your auth provider (Supabase/Firebase)
-      // await supabase.auth.resetPasswordForEmail(_emailController.text.trim());
+      final email = _emailController.text.trim();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Reset link sent. Check your inbox.'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // ⚡ Supabase: Send password reset email
+      await Supabase.instance.client.auth.resetPasswordForEmail(email);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Unexpected error: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       setState(() => _sending = false);
@@ -40,14 +84,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: theme.scaffoldBackgroundColor, // same as Scaffold
         elevation: 0,
         centerTitle: true,
-        title: const Text('Forgot Password'),
+        title: Text(
+          'Forgot Password',
+          style: TextStyle(color: isDark ? Colors.white : Colors.pinkAccent),
+        ),
         // keep the foreground text/icon color adaptive
         foregroundColor: theme.colorScheme.onSurface,
       ),
@@ -103,11 +150,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     onPressed: _sending ? null : _sendResetEmail,
                     child: _sending
-                        ? const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          )
+                        ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
                             'Send Reset Email',
                             style: TextStyle(fontSize: 16),

@@ -18,8 +18,9 @@ class _AuthSwitcherScreenState extends State<AuthSwitcherScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     final Color activeColor = AppTheme.primaryPink;
-    final Color inactiveColor = theme.brightness == Brightness.dark
+    final Color inactiveColor = isDarkMode
         ? Colors.grey[700]!
         : Colors.grey[300]!;
 
@@ -56,24 +57,26 @@ class _AuthSwitcherScreenState extends State<AuthSwitcherScreen> {
                     0: SizedBox(
                       height:
                           44, // 🔧 Individual segment height (slightly smaller than parent height)
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'Login',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
+                            color: isDarkMode ? Colors.grey : Colors.white,
                           ),
                         ),
                       ),
                     ),
                     1: SizedBox(
                       height: 44,
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'Sign Up',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
+                            color: isDarkMode ? Colors.grey : Colors.white,
                           ),
                         ),
                       ),

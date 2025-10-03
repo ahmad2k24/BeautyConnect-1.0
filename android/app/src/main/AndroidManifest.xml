@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET" /> 
 
     <application
-        android:label="beauty_connect"
+        android:label="Beauty Connect"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
@@ -40,6 +40,7 @@
                 <!-- Replace "myapp" with your scheme -->
                 <data android:scheme="beautyconnect" android:host="stripe-onboarding-done" />
                 <data android:scheme="beautyconnect" android:host="stripe-reauth" />
+                <data android:scheme="beautyconnect" android:host="reset-password" />
             </intent-filter>
 
         </activity>
