@@ -65,14 +65,7 @@ class ServiceRepository {
   }
 
   Future<void> deletePosts(String serviceId) async {
-    final response = await _client
-        .from('services')
-        .delete()
-        .eq('service_id', serviceId);
-
-    if (response.error != null) {
-      throw Exception(response.error!.message);
-    }
+    await _client.from('services').delete().eq('service_id', serviceId);
   }
 
   /// Stream all services except the current user's services

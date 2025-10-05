@@ -16,11 +16,49 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool loading = true;
   final SupabaseClient _client = Supabase.instance.client;
   final PaymentRepository paymentRepository = PaymentRepository();
+  bool _isVerified = false;
+  bool _checkingVerification = true;
+  Future<void> checkAccountVerification() async {
+    setState(() {
+      _checkingVerification = true;
+    });
+
+    try {
+      final userId = _client.auth.currentUser!.id;
+
+      final response = await _client
+          .from('accounts')
+          .select('verified')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      bool verified = response != null && response['verified'] == true;
+
+      setState(() {
+        _isVerified = verified;
+      });
+    } catch (e) {
+      print('Error checking account verification: $e');
+      setState(() {
+        _isVerified = false;
+      });
+    } finally {
+      setState(() {
+        _checkingVerification = false;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    fetchSubscription();
+    checkAccountVerification().then((_) {
+      if (_isVerified) {
+        fetchSubscription();
+      } else {
+        setState(() => loading = false);
+      }
+    });
   }
 
   Future<void> fetchSubscription() async {
@@ -148,8 +186,54 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: loading
+      body: (_checkingVerification || loading)
           ? const Center(child: CircularProgressIndicator())
+          : !_isVerified
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.orange.shade300,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.orange,
+                        size: 60,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Merchant Account Required',
+                        style: TextStyle(
+                          color: Colors.orange.shade800,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Please create and verify your merchant account first.\nVisit Payments & Merchant Profile to complete verification.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontSize: 16,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(

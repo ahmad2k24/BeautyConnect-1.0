@@ -202,6 +202,7 @@ class _PreviewCheckoutScreenState extends State<PreviewCheckoutScreen> {
                 price: widget.post.price,
                 duration: widget.post.duration,
                 status: 'Pending',
+                createdAt: DateTime.now(),
               );
               final String merchantId = await paymentRepo
                   .fetchMerchantAccountId(widget.post.vendorId);

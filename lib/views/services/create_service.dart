@@ -174,21 +174,21 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   // ✅ New subscription state
   bool _hasActiveSubscription = false;
   bool _loadingSubscription = true;
-
+  bool _isVerified = false;
   @override
   void initState() {
     super.initState();
-    checkSubscriptionStatus();
+    checkEligibility();
   }
 
-  /// Check if user has an active subscription
-  Future<void> checkSubscriptionStatus() async {
+  Future<void> checkEligibility() async {
     setState(() => _loadingSubscription = true);
 
     try {
       final userId = SupabaseConfig.client.auth.currentUser!.id;
 
-      final response = await SupabaseConfig.client
+      // ✅ 1. Check subscription status
+      final subscription = await SupabaseConfig.client
           .from('subscriptions')
           .select('subscription_expiry, status')
           .eq('user_id', userId)
@@ -196,25 +196,40 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
           .limit(1)
           .maybeSingle();
 
-      if (response == null) {
-        _hasActiveSubscription = false;
-      } else {
+      bool hasActiveSubscription = false;
+      if (subscription != null) {
         final expiryDate = DateTime.parse(
-          response['subscription_expiry'],
+          subscription['subscription_expiry'],
         ).toUtc();
         final now = DateTime.now().toUtc();
-        final rawStatus = (response['status'] ?? '').toString().toLowerCase();
-
-        _hasActiveSubscription =
+        final rawStatus = (subscription['status'] ?? '')
+            .toString()
+            .toLowerCase();
+        hasActiveSubscription =
             rawStatus == 'active' && expiryDate.isAfter(now);
       }
-    } catch (e) {
-      _hasActiveSubscription = false;
-      print('Error checking subscription: $e');
-    }
 
-    if (mounted) {
-      setState(() => _loadingSubscription = false);
+      // ✅ 2. Check if account is verified
+      final account = await SupabaseConfig.client
+          .from('accounts')
+          .select('verified')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      bool isVerified = (account != null && account['verified'] == true);
+
+      setState(() {
+        _hasActiveSubscription = hasActiveSubscription;
+        _isVerified = isVerified;
+      });
+    } catch (e) {
+      print('Error checking eligibility: $e');
+      setState(() {
+        _hasActiveSubscription = false;
+        _isVerified = false;
+      });
+    } finally {
+      if (mounted) setState(() => _loadingSubscription = false);
     }
   }
 
@@ -252,6 +267,25 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                         ),
                       ),
                     ),
+                  if (!_isVerified)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.shade400),
+                      ),
+                      child: const Text(
+                        '❌ Your account is not verified. Please create a verified Merchant account.',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
                   Form(
                     key: _formKey,
                     child: Column(
@@ -511,7 +545,9 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             onPressed:
-                                (!_hasActiveSubscription || _isSubmitting)
+                                (!_hasActiveSubscription ||
+                                    _isSubmitting ||
+                                    !_isVerified)
                                 ? null
                                 : _submitForm,
                             child: _isSubmitting

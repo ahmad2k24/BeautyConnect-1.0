@@ -21,7 +21,7 @@ class _MessageScreenState extends State<MessageScreen> {
   bool _loading = true;
   Map<String, dynamic>? _data = {};
   Future<void> _loadContacts() async {
-    final res = await _repo.fetchSingleChatContact(widget.currentUserId!);
+    final res = await _repo.fetchSingleChatContact(widget.otherUserId!);
     setState(() {
       _data = res;
     });
