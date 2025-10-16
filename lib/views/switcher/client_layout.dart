@@ -29,7 +29,7 @@ class _ClientLayoutState extends State<ClientLayout> {
       ClientHome(),
       ChatScreen(currentUserId: currentUserId),
       ClientBookings(),
-      ProfileSwitcherScreen(),
+      ClientProfile(),
     ];
   }
 

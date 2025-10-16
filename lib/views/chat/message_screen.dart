@@ -21,7 +21,7 @@ class _MessageScreenState extends State<MessageScreen> {
   bool _loading = true;
   Map<String, dynamic>? _data = {};
   Future<void> _loadContacts() async {
-    final res = await _repo.fetchSingleChatContact(widget.otherUserId!);
+    final res = await _repo.getUserDetails(widget.otherUserId!);
     setState(() {
       _data = res;
     });
@@ -96,7 +96,7 @@ class _MessageScreenState extends State<MessageScreen> {
             children: [
               CircleAvatar(
                 backgroundImage: _data != null
-                    ? NetworkImage('${_data!['avatar']}')
+                    ? NetworkImage('${_data!['url']}')
                     : null,
                 child: _data == null ? const CircularProgressIndicator() : null,
               ),

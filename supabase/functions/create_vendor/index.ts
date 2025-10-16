@@ -38,8 +38,8 @@ serve(async (req) => {
     // 2️⃣ Create Stripe onboarding link with deep links
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: "beautyconnect://stripe-reauth",           // deep link for retry
-      return_url: "beautyconnect://stripe-onboarding-done",  // deep link after success
+      refresh_url: "https://your-app.com/reauth",
+      return_url: "https://your-app.com/onboarding-complete",
       type: "account_onboarding",
     });
 

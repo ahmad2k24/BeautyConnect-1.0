@@ -237,8 +237,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     prefixIcon: Icon(Icons.email),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return "Enter your email";
+                    }
                     if (!RegExp(
                       r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
                     ).hasMatch(value)) {
@@ -544,41 +545,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 20),
 
-                // Divider with "OR"
                 Row(
-                  children: const [
-                    Expanded(child: Divider(thickness: 1)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text("OR"),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Already  have an account!'),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => LoginScreen()),
+                        );
+                      },
+                      child: Text('Login'),
                     ),
-                    Expanded(child: Divider(thickness: 1)),
                   ],
-                ),
-                const SizedBox(height: 20),
-
-                // Social Buttons
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(double.infinity, 50),
-                    side: const BorderSide(color: Colors.grey),
-                  ),
-                  icon: Image.asset("assets/icons/google.png", height: 24),
-                  label: const Text("Continue with Google"),
-                  onPressed: () {},
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  icon: Image.asset("assets/icons/apple.png", height: 24),
-                  label: const Text("Continue with Apple"),
-                  onPressed: () {},
                 ),
                 const SizedBox(height: 20),
               ],

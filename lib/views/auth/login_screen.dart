@@ -81,6 +81,10 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Welcome \nBack',
+                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.w500),
+                ),
                 Form(
                   key: _formKey,
                   child: Column(
@@ -219,7 +223,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   label: const Text("Continue with Apple"),
                   onPressed: () {},
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Do not have an account!'),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => SignUpScreen()),
+                        );
+                      },
+                      child: Text('Signup'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 32),
               ],
             ),
           ),

@@ -139,4 +139,41 @@ class ChatRepository {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>> getUserDetails(String userId) async {
+    try {
+      // First check in clients table
+      final clientResponse = await supabase
+          .from('clients')
+          .select('name, avatar_url')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (clientResponse != null) {
+        return {
+          'name': clientResponse['name'],
+          'url': clientResponse['avatar_url'],
+        };
+      }
+
+      // Then check in vendors table
+      final vendorResponse = await supabase
+          .from('vendors')
+          .select('name, vendor_url')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (vendorResponse != null) {
+        return {
+          'name': vendorResponse['name'],
+          'url': vendorResponse['vendor_url'],
+        };
+      }
+
+      throw Exception('User not found in clients or vendors');
+    } catch (e) {
+      print('Error fetching user details: $e');
+      rethrow;
+    }
+  }
 }

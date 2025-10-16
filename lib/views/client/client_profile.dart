@@ -242,7 +242,7 @@ class _ClientProfileState extends State<ClientProfile> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) {
-                                      return const AuthSwitcherScreen();
+                                      return const LoginScreen();
                                     },
                                   ),
                                 );

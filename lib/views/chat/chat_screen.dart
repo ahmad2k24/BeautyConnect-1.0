@@ -64,16 +64,18 @@ class _ChatScreenState extends State<ChatScreen> {
               itemCount: _threads.length,
               itemBuilder: (context, i) {
                 final t = _threads[i];
-                final otherUser = t.user1 == widget.currentUserId
-                    ? t.user2
-                    : t.user1;
-                final otherAvatar = t.user2 == widget.currentUserId
-                    ? t.user2Avatar
-                    : t.user1Avatar;
-                final otherName = t.user2 == widget.currentUserId
+                final isCurrentUserUser1 = t.user1 == widget.currentUserId;
+
+                final otherUserId = isCurrentUserUser1 ? t.user2 : t.user1;
+                final otherUserName = isCurrentUserUser1
                     ? t.user2Name
                     : t.user1Name;
-
+                final otherUserAvatar = isCurrentUserUser1
+                    ? t.user2Avatar
+                    : t.user1Avatar;
+                print(
+                  'other user ID : $otherUserId /n other user Name : $otherUserName /n other user Avatar: $otherUserAvatar',
+                );
                 return Card(
                   color: isDark ? Colors.grey.shade900 : Colors.white,
                   elevation: 2,
@@ -92,10 +94,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     leading: CircleAvatar(
                       radius: 26,
                       backgroundColor: Colors.pink.shade100,
-                      backgroundImage: otherAvatar.isNotEmpty
-                          ? NetworkImage(otherAvatar)
+                      backgroundImage: otherUserAvatar.isNotEmpty
+                          ? NetworkImage(otherUserAvatar)
                           : null,
-                      child: otherAvatar.isEmpty
+                      child: otherUserAvatar.isEmpty
                           ? const Icon(
                               Icons.person,
                               color: Colors.white,
@@ -104,7 +106,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           : null,
                     ),
                     title: Text(
-                      otherName,
+                      otherUserName,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -139,7 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => MessageScreen(
-                            otherUserId: otherUser,
+                            otherUserId: otherUserId,
                             currentUserId: widget.currentUserId,
                           ),
                         ),

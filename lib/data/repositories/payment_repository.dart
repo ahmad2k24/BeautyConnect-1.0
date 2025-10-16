@@ -62,30 +62,6 @@ class PaymentRepository {
     }
   }
 
-  Future<void> startVendorOnboarding({
-    required BuildContext context,
-    required String userId,
-    required String email,
-    required String country,
-  }) async {
-    final res = await supabase.functions.invoke(
-      'create_vendor',
-      body: {'user_id': userId, 'email': email, 'country': country},
-    );
-
-    if (res.status != 200) throw Exception('Function call failed: ${res.data}');
-
-    final onboardingUrl = res.data['onboarding_url'] as String;
-
-    // Navigate to WebView screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => VendorOnboarding(onboardingUrl: onboardingUrl),
-      ),
-    );
-  }
-
   //fetch merchant account details
   Future<Map<String, dynamic>> fetchMerchantFullInfo(
     String merchantAccountId,
@@ -116,42 +92,5 @@ class PaymentRepository {
     }
 
     return response['account_id'] as String;
-  }
-
-  Future<void> buy5EuroSubscription({required String userId}) async {
-    final supabase = Supabase.instance.client;
-
-    // 1️⃣ Call your Edge Function
-    final response = await supabase.functions.invoke(
-      'buy_subscription', // Name of your Edge Function
-      body: {'user_id': userId},
-    );
-
-    if (response.status != 200) {
-      print('Error: ${response.data}');
-      throw Exception('Function call failed: ${response.data}');
-    }
-
-    final clientSecret = response.data['clientSecret'];
-    final subscriptionData = response.data['subscription'];
-
-    print('Subscription record: $subscriptionData');
-
-    // 2️⃣ Open Stripe PaymentSheet in-app
-    await Stripe.instance.initPaymentSheet(
-      paymentSheetParameters: SetupPaymentSheetParameters(
-        paymentIntentClientSecret: clientSecret,
-        merchantDisplayName: 'Beauty Connect',
-      ),
-    );
-
-    try {
-      await Stripe.instance.presentPaymentSheet();
-      print('Payment successful!');
-
-      // Optionally: update Supabase subscription status here if needed
-    } catch (e) {
-      print('Payment failed: $e');
-    }
   }
 }
